@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>WalanoCast Marketplace d'abonnements numériques</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://api.fontshare.com/v2/css?f[]=metropolis@400,500,600,700,800,900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent: #e91035;
+    --bg: #0f0f0f;
+    --font-body: 'Inter', 'Metropolis', system-ui, -apple-system, sans-serif;
+    --font-display: 'Inter', 'Metropolis', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; overflow-x: hidden; }
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: #fff;
+    letter-spacing: -0.02em;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3 { letter-spacing: -0.035em; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: #0a0a0a; }
+  ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 5px; }
+  ::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
+  input::placeholder { color: #8a8a8a; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .om-search-result { transition: background 0.12s ease; }
+  .om-search-result:hover { background: #1a1a1a; }
+  @keyframes pulseToast { 0% { transform: translate(-50%, 20px); opacity: 0; } 100% { transform: translate(-50%, 0); opacity: 1; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="components.jsx"></script>
+<script type="text/babel" src="product-page.jsx"></script>
+<script type="text/babel" src="auth-page.jsx"></script>
+<script type="text/babel" src="about-page.jsx"></script>
+<script type="text/babel" src="faq-page.jsx"></script>
+<script type="text/babel" src="policy-page.jsx"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useMemo, useRef } = React;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tweak defaults (host can rewrite this block on disk)
+// ─────────────────────────────────────────────────────────────────────────────
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accent": "#e91035",
+  "background": "#0f0f0f",
+  "headerStyle": "Bold red bar",
+  "cardFooter": "Dark with red trim",
+  "displayFont": "Inter"
+}/*EDITMODE-END*/;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Product catalogue
+// ─────────────────────────────────────────────────────────────────────────────
+const PRODUCTS = [
+  // Film / séries
+  { id: 'p1',  cat: 'film', initials: 'CV', platform: 'CinéVault 4K', name: 'Plan Premium 12 mois', price: 12500, old: 18000, discount: 30, idx: 0 },
+  { id: 'p2',  cat: 'film', initials: 'MX', platform: 'MovieX HD',    name: 'Compte Familial 6 mois', price: 9500,  old: 13000, discount: 27, idx: 1 },
+  { id: 'p3',  cat: 'film', initials: 'SH', platform: 'Series Hub',   name: 'Profil partagé 3 mois',  price: 4200,  old: 6500,  discount: 35, idx: 2 },
+  { id: 'p4',  cat: 'film', initials: 'PF', platform: 'PrimeFlix',    name: 'Annuel Accès complet',   price: 14900, old: 20000, discount: 25, idx: 3 },
+  { id: 'p5',  cat: 'film', initials: 'TV', platform: 'TéléVision+',  name: 'Sport & Cinéma 1 mois',  price: 3500,  old: null,  discount: null, idx: 0 },
+  // Musique
+  { id: 'p6',  cat: 'musique', initials: 'SP', platform: 'Sonic Pass',   name: 'Family 12 mois',        price: 11900, old: 15000, discount: 20, idx: 0 },
+  { id: 'p7',  cat: 'musique', initials: 'BU', platform: 'Beats Unlimited', name: 'Premium Solo 6 mois',price: 6500,  old: 9000,  discount: 27, idx: 1 },
+  { id: 'p8',  cat: 'musique', initials: 'RX', platform: 'Rhythm+',      name: 'Duo Annuel',            price: 8200,  old: null,  discount: null, idx: 2 },
+  { id: 'p9',  cat: 'musique', initials: 'AW', platform: 'AudioWave',    name: 'Hi-Fi 3 mois',          price: 4900,  old: 7200,  discount: 32, idx: 0 },
+  { id: 'p10', cat: 'musique', initials: 'WR', platform: 'WaveRadio Pro', name: 'Streaming sans pub',     price: 2900,  old: null,  discount: null, idx: 1 },
+  // IA
+  { id: 'p11', cat: 'ia', initials: 'BA', platform: 'Brain AI',     name: 'Pro Crédits illimités 30j', price: 8900, old: 11500, discount: 22, idx: 0 },
+  { id: 'p12', cat: 'ia', initials: 'CN', platform: 'ChatNova',     name: 'Plus 12 mois',              price: 24500, old: 32000, discount: 23, idx: 1 },
+  { id: 'p13', cat: 'ia', initials: 'VS', platform: 'Vision Studio', name: 'Génération illimitée 1 mois', price: 7400, old: null, discount: null, idx: 2 },
+  { id: 'p14', cat: 'ia', initials: 'CM', platform: 'CodeMate',     name: 'Dev Pro 6 mois',            price: 13800, old: 18500, discount: 25, idx: 0 },
+  { id: 'p15', cat: 'ia', initials: 'TX', platform: 'TraduXion',    name: '100 langues Annuel',        price: 5900,  old: 7900,  discount: 25, idx: 1 },
+  // Gaming
+  { id: 'p16', cat: 'gaming', initials: 'GP', platform: 'GamePass Ultra', name: '3 mois 100+ jeux',     price: 9900,  old: 13500, discount: 26, idx: 0 },
+  { id: 'p17', cat: 'gaming', initials: 'PS', platform: 'PlayNet+',       name: 'Online 12 mois',       price: 19500, old: 24000, discount: 19, idx: 1 },
+  { id: 'p18', cat: 'gaming', initials: 'FN', platform: 'FortRealm',      name: '5 000 V-Coins',          price: 2900,  old: null,  discount: null, idx: 0 },
+  { id: 'p19', cat: 'gaming', initials: 'VL', platform: 'ValuePoints',    name: '11 000 pts',             price: 5500,  old: null,  discount: null, idx: 1 },
+  { id: 'p20', cat: 'gaming', initials: 'EA', platform: 'EApass Play',    name: 'Annuel Vault inclus',  price: 11900, old: 15000, discount: 21, idx: 0 },
+  // Cartes
+  { id: 'p21', cat: 'cartes', initials: '10', platform: 'Carte Boutique', name: 'Bon d’achat 10 000 FCFA', price: 10000, old: null, discount: null, idx: 0 },
+  { id: 'p22', cat: 'cartes', initials: '25', platform: 'Carte Streaming',name: 'Bon d’achat 25 000 FCFA', price: 25000, old: null, discount: null, idx: 1 },
+  { id: 'p23', cat: 'cartes', initials: 'AP', platform: 'AppStore',       name: 'Carte 15 €',              price: 11200, old: null, discount: null, idx: 0 },
+  { id: 'p24', cat: 'cartes', initials: 'GP', platform: 'PlayStore',      name: 'Carte 20 €',              price: 14900, old: null, discount: null, idx: 1 },
+  { id: 'p25', cat: 'cartes', initials: 'RZ', platform: 'Razer Gold',     name: '500 ZGold',               price: 3500,  old: null, discount: null, idx: 0 },
+];
+
+const HERO_SIDES = []; // (removed hero is single full-width slide)
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Hash router helper
+// ─────────────────────────────────────────────────────────────────────────────
+function parseRoute(hash) {
+  const m = (hash || '').match(/^#\/product\/([^/?]+)/);
+  if (m) return { view: 'product', id: m[1] };
+  if (/^#\/login/.test(hash))    return { view: 'auth', mode: 'login' };
+  if (/^#\/register/.test(hash)) return { view: 'auth', mode: 'register' };
+  if (/^#\/about/.test(hash))    return { view: 'about' };
+  if (/^#\/faq/.test(hash))      return { view: 'faq' };
+  if (/^#\/privacy/.test(hash) || /^#\/legal/.test(hash) || /^#\/terms/.test(hash))
+    return { view: 'policy' };
+  return { view: 'home' };
+}
+
+// Accent-insensitive normalize (é → e, etc.)
+const norm = (s) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// App
+// ─────────────────────────────────────────────────────────────────────────────
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [activeCat, setActiveCat] = useState('tout');
+  const [query, setQuery] = useState('');
+  const [cart, setCart] = useState([]);
+  const [wishlist, setWishlist] = useState(new Set());
+  const [cartOpen, setCartOpen] = useState(false);
+  const [heroIdx, setHeroIdx] = useState(0);
+  const [toast, setToast] = useState(null);
+  const [route, setRoute] = useState(() => parseRoute(window.location.hash));
+  const isMobile = useIsMobile();
+
+  // CSS var bindings
+  useEffect(() => {
+    document.documentElement.style.setProperty('--accent', t.accent);
+    document.documentElement.style.setProperty('--bg', t.background);
+    document.body.style.background = t.background;
+    document.documentElement.style.setProperty('--font-display',
+      t.displayFont === 'Manrope' ? "'Manrope', sans-serif"
+      : t.displayFont === 'Inter' ? "'Inter', sans-serif"
+      : "'Metropolis', sans-serif");
+  }, [t.accent, t.background, t.displayFont]);
+
+  // Hash router
+  useEffect(() => {
+    const sync = () => setRoute(parseRoute(window.location.hash));
+    window.addEventListener('hashchange', sync);
+    return () => window.removeEventListener('hashchange', sync);
+  }, []);
+
+  // Hero auto-rotate
+  useEffect(() => {
+    const id = setInterval(() => setHeroIdx((i) => (i + 1) % HERO_SLIDES.length), 6000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Filter
+  const filtered = useMemo(() => {
+    let list = PRODUCTS;
+    if (activeCat !== 'tout' && activeCat !== 'instant') list = list.filter((p) => p.cat === activeCat);
+    if (query) {
+      const q = norm(query.trim());
+      list = list.filter((p) =>
+        norm(p.name).includes(q) || norm(p.platform).includes(q)
+      );
+    }
+    return list;
+  }, [activeCat, query]);
+
+  // Live search results (max 6) shown in dropdown
+  const searchResults = useMemo(() => {
+    const q = norm(query.trim());
+    if (!q) return [];
+    return PRODUCTS.filter((p) =>
+      norm(p.name).includes(q) || norm(p.platform).includes(q)
+    ).slice(0, 6);
+  }, [query]);
+
+  const addToCart = (p, qty = 1) => {
+    setCart((c) => {
+      const existing = c.find((i) => i.p.id === p.id);
+      if (existing) return c.map((i) => i.p.id === p.id ? { ...i, qty: i.qty + qty } : i);
+      return [...c, { p, qty }];
+    });
+    setToast(`Ajouté : ${p.platform}`);
+    clearTimeout(window.__toastT);
+    window.__toastT = setTimeout(() => setToast(null), 2200);
+  };
+
+  const removeFromCart = (id) => setCart((c) => c.filter((i) => i.p.id !== id));
+
+  const toggleWish = (id) => setWishlist((w) => {
+    const n = new Set(w);
+    n.has(id) ? n.delete(id) : n.add(id);
+    return n;
+  });
+
+  const cartCount = cart.reduce((s, i) => s + i.qty, 0);
+
+  // Slice for sections (when "Tout")
+  const sliceCount = isMobile ? 4 : 5;
+  const film = PRODUCTS.filter((p) => p.cat === 'film').slice(0, sliceCount);
+  const musique = PRODUCTS.filter((p) => p.cat === 'musique').slice(0, sliceCount);
+  const ia = PRODUCTS.filter((p) => p.cat === 'ia').slice(0, sliceCount);
+
+  // Auth page is full-bleed (no header/footer)
+  if (route.view === 'auth') {
+    return <AuthPage mode={route.mode} />;
+  }
+
+  return (
+    <div data-screen-label="01 WalanoCast" style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+      <Header
+        accent={t.headerStyle === 'Dark with red logo' ? '#161616' : t.accent}
+        headerStyle={t.headerStyle}
+        brandAccent={t.accent}
+        cartCount={cartCount}
+        wishCount={wishlist.size}
+        query={query} setQuery={setQuery}
+        searchResults={searchResults}
+        onCart={() => setCartOpen(true)}
+        onWish={() => { /* could open wishlist */ }}
+      />
+
+      {route.view === 'product' ? (() => {
+        const product = PRODUCTS.find((p) => p.id === route.id);
+        if (!product) {
+          return <div style={{ padding: 80, textAlign: 'center', color: '#888' }}>
+            Produit introuvable. <a href="#/" style={{ color: 'var(--accent)' }}>Retour à l’accueil</a>
+          </div>;
+        }
+        return <ProductPage
+          product={product}
+          allProducts={PRODUCTS}
+          onAdd={addToCart}
+          onWish={toggleWish}
+          wishlist={wishlist}
+        />;
+      })() : route.view === 'about' ? (
+        <AboutPage />
+      ) : route.view === 'faq' ? (
+        <FaqPage />
+      ) : route.view === 'policy' ? (
+        <PolicyPage />
+      ) : (
+      <>
+      <Hero
+        slides={HERO_SLIDES}
+        idx={heroIdx} total={HERO_SLIDES.length}
+        onPrev={() => setHeroIdx((i) => (i - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)}
+        onNext={() => setHeroIdx((i) => (i + 1) % HERO_SLIDES.length)}
+        onDot={setHeroIdx}
+      />
+
+      <CategoryNav active={activeCat} onChange={setActiveCat} />
+
+      <main style={{ maxWidth: 1480, margin: '0 auto', padding: isMobile ? '0 16px 32px' : '0 28px 40px' }}>
+        {((activeCat === 'tout' || activeCat === 'instant') && !query) ? (
+          <>
+            <SectionTitle title="Film & séries" />
+            <ProductGrid products={film} onAdd={addToCart} onWish={toggleWish} wishlist={wishlist} />
+
+            <Banner
+              tag="OFFRE DE LANCEMENT"
+              title="Économise 25% avec Cast+"
+              sub="Un abonnement, des prix membres sur tout le catalogue, livraison prioritaire et garantie étendue."
+              cta="Rejoindre Cast+"
+              palette={['#250812', '#460b1a', t.accent]}
+            />
+
+            <SectionTitle title="Musique sans publicité" />
+            <ProductGrid products={musique} onAdd={addToCart} onWish={toggleWish} wishlist={wishlist} />
+
+            <SectionTitle title="Intelligence artificielle" />
+            <ProductGrid products={ia} onAdd={addToCart} onWish={toggleWish} wishlist={wishlist} />
+
+            <Banner
+              tag="GUIDE WALANO"
+              title="Pourquoi payer 4× moins cher ?"
+              sub="Tous nos packs sont des comptes mutualisés ou des codes officiels légaux, garantis 12 mois, support 24/7."
+              cta="En savoir plus"
+              palette={['#040c20', '#082045', '#3b82f6']}
+            />
+          </>
+        ) : (
+          <>
+            <SectionTitle
+              title={query ? `Résultats pour "${query}"` : CATS.find((c) => c.id === activeCat)?.label}
+              more=""
+            />
+            {filtered.length > 0
+              ? <ProductGrid products={filtered} onAdd={addToCart} onWish={toggleWish} wishlist={wishlist} />
+              : <div style={{ padding: 80, textAlign: 'center', color: '#888', border: '1px dashed #222', borderRadius: 12 }}>
+                  Aucun produit trouvé. Essayez d’autres mots-clés.
+                </div>}
+          </>
+        )}
+      </main>
+      </>
+      )}
+
+      {(route.view === 'home' || route.view === 'product') && <TrustBar />}
+
+      <Footer />
+
+      <CartDrawer
+        open={cartOpen} items={cart}
+        onClose={() => setCartOpen(false)} onRemove={removeFromCart}
+      />
+
+      {toast && (
+        <div style={{
+          position: 'fixed', bottom: 32, left: '50%', zIndex: 200,
+          padding: '14px 24px', borderRadius: 10,
+          background: '#fff', color: '#0f0f0f', fontSize: 14, fontWeight: 700,
+          boxShadow: '0 10px 40px rgba(0,0,0,0.4)',
+          animation: 'pulseToast 0.25s ease',
+          display: 'flex', alignItems: 'center', gap: 10,
+        }}>
+          <span style={{
+            width: 22, height: 22, borderRadius: '50%', background: 'var(--accent)',
+            color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Icon name="check" size={14} stroke={2.5} />
+          </span>
+          {toast}
+        </div>
+      )}
+
+      {/* Tweaks panel */}
+      <TweaksPanel title="Tweaks">
+        <TweakSection label="Couleurs">
+          <TweakColor
+            label="Accent"
+            value={t.accent}
+            onChange={(v) => setTweak('accent', v)}
+            options={['#e91035', '#ff5e00', '#22c55e', '#3b82f6', '#a855f7', '#fbbf24']}
+          />
+          <TweakColor
+            label="Fond"
+            value={t.background}
+            onChange={(v) => setTweak('background', v)}
+            options={['#0f0f0f', '#0a0a0a', '#111418', '#0e0a14', '#1a1a1a']}
+          />
+        </TweakSection>
+        <TweakSection label="Mise en page">
+          <TweakSelect
+            label="Style d’en-tête"
+            value={t.headerStyle}
+            onChange={(v) => setTweak('headerStyle', v)}
+            options={['Bold red bar', 'Dark with red logo']}
+          />
+          <TweakSelect
+            label="Pied de carte produit"
+            value={t.cardFooter}
+            onChange={(v) => setTweak('cardFooter', v)}
+            options={['Red action', 'Dark with red trim']}
+          />
+          <TweakSelect
+            label="Police d’affichage"
+            value={t.displayFont}
+            onChange={(v) => setTweak('displayFont', v)}
+            options={['Metropolis', 'Manrope', 'Inter']}
+          />
+        </TweakSection>
+      </TweaksPanel>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+
+</body>
+</html>

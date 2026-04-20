@@ -1,0 +1,27 @@
+{
+  "common": {
+    "from": "À partir de",
+    "view": "Voir",
+    "buy": "Commander",
+    "login": "Connexion",
+    "logout": "Déconnexion",
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "confirm": "Confirmer"
+  },
+  "home": {
+    "hero_title": "Abonnements Premium",
+    "hero_sub": "Netflix, Spotify, Apple Music & plus — livraison instantanée",
+    "no_services": "Aucun service disponible pour le moment."
+  },
+  "checkout": {
+    "guest_email": "Adresse email",
+    "guest_whatsapp": "Numéro WhatsApp",
+    "guest_hint": "Vos identifiants seront envoyés sur WhatsApp",
+    "pay_now": "Payer maintenant",
+    "order_summary": "Résumé de la commande",
+    "delivery_instant": "Livraison instantanée"
+  }
+}

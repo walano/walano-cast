@@ -1,0 +1,15 @@
+-- Basket / multi-item orders. An order_group = one basket = one payment.
+-- orders become line items pointing to a group. Each item reserves stock at
+-- creation when available, otherwise is a BACKORDER (awaiting_stock) fulfilled
+-- later when the admin loads stock. Progressive delivery per item.
+-- (Applied to WalanoCastManagement 2026-07-23; enum value awaiting_stock added
+-- in a prior migration; paypal_capture_fulfill dropped before re-create due to
+-- return-type change to order_groups. See remote for authoritative copy.)
+
+-- Full statement body identical to the applied migration:
+--   gen_group_ref(), order_groups table + indexes + RLS,
+--   orders.group_id + drop of per-order payment columns,
+--   _fulfill_item, create_group, submit_group_txn, approve_group, reject_group,
+--   retry_fulfillment (per line item), fulfill_awaiting_stock, paypal_capture_fulfill,
+--   expire_groups; drop of single-order RPCs; cron swap to expire_groups.
+-- (kept in the DB migration history; not re-pasted here to avoid drift.)

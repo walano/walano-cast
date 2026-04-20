@@ -1,0 +1,27 @@
+{
+  "common": {
+    "from": "From",
+    "view": "View",
+    "buy": "Order",
+    "login": "Sign In",
+    "logout": "Sign Out",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
+  },
+  "home": {
+    "hero_title": "Premium Subscriptions",
+    "hero_sub": "Netflix, Spotify, Apple Music & more — instant delivery",
+    "no_services": "No services available at the moment."
+  },
+  "checkout": {
+    "guest_email": "Email address",
+    "guest_whatsapp": "WhatsApp number",
+    "guest_hint": "Your credentials will be sent via WhatsApp",
+    "pay_now": "Pay now",
+    "order_summary": "Order summary",
+    "delivery_instant": "Instant delivery"
+  }
+}
