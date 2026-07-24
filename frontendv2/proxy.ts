@@ -32,7 +32,7 @@ export async function proxy(req: NextRequest) {
   // Refreshed auth cookies land on `response`; copied onto the redirect below.
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON!,
     {
       cookies: {
         getAll: () => req.cookies.getAll(),

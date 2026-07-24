@@ -14,7 +14,7 @@ npm run build
 ```
 
 Env (`.env.local`):
-- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` — client + SSR
+- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON` — client + SSR
 - `SUPABASE_SERVICE_ROLE_KEY` — admin API routes (`lib/supabase/admin.ts`)
 - `NEXT_PUBLIC_SITE_URL` — OAuth redirect / absolute links
 - `NEXT_PUBLIC_WHATSAPP_NUMBER` — support link

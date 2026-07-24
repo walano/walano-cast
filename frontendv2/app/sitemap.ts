@@ -20,7 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Cookie-less context: plain anon client (public catalog is RLS-readable).
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON!,
     )
     const { data: services } = await supabase
       .from('services').select('slug, updated_at').eq('is_active', true).limit(200)
