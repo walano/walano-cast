@@ -1,7 +1,7 @@
 'use client'
 // Home: hero, category nav (client-side filter), product grids grouped by
 // category with editorial banners, then the trust bar. Data comes from the
-// server page (live Chariow catalogue mapped to v2 cards).
+// server page (Supabase catalogue mapped to v2 cards).
 
 import { useMemo, useState } from 'react'
 import { Hero, TrustBar, CategoryNav, ProductGrid, SectionTitle, Banner, type CatOption } from './sections'

@@ -1,6 +1,6 @@
 // Storefront catalog source — Supabase (categories → services → plans + stock).
-// Replaces the old Chariow/Express pipeline. Maps rows onto the v2 design
-// shapes (CardProduct, CatOption-like) so design components stay unchanged.
+// Maps rows onto the v2 design shapes (CardProduct, CatOption-like) so design
+// components stay unchanged.
 
 import { createClient } from '@/lib/supabase/server'
 import { categoryIcon, type CardProduct } from '@/lib/v2-adapter'

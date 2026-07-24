@@ -16,14 +16,13 @@ create table public.manual_requests (
   customer_name     text,
   customer_whatsapp text,
   -- Subscription demandée
-  product_id        text not null,   -- ID Chariow du produit
+  product_id        text not null,   -- ID du produit
   product_name      text not null,   -- Nom au moment de la demande
   quantity          int not null default 1,
   -- Traitement admin
   status            request_status not null default 'pending',
   admin_user_id     uuid references auth.users(id) on delete set null,
   admin_notes       text,
-  chariow_sale_id   text,            -- Rempli quand la vente est créée dans Chariow
   -- Timestamps
   created_at        timestamptz not null default now(),
   updated_at        timestamptz not null default now(),

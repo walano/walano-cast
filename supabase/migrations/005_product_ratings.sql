@@ -1,4 +1,4 @@
--- Notes utilisateurs par produit (clé = product_id Chariow + user_id).
+-- Notes utilisateurs par produit (clé = product_id + user_id).
 -- Un utilisateur ne peut noter qu'une fois un produit (PK composite).
 -- Aggregate (AVG, COUNT) reste calculable côté lecture ; affichage statique
 -- pour l'instant (cf. front).

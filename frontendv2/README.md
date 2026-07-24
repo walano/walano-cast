@@ -1,22 +1,24 @@
 # WalanoCast — frontend v2
 
-Next.js 16 (App Router) storefront built on the **v2 red marketplace design**, wired
-to the existing backend. Same proven infra as `../frontend` (Supabase SSR auth,
-`lib/api.ts` → Express backend on Railway, `chariow-adapter`), reskinned with the
-v2 design and split into one folder per section so each part is edited in isolation.
+Next.js 16 (App Router) storefront on the **v2 red marketplace design**. Full-stack:
+UI + server API routes (`app/api/*`) talking directly to **Supabase** (SSR auth,
+Postgres, RLS, RPCs). No separate backend service — everything runs in this app.
+Split into one folder per section so each part is edited in isolation.
 
 ## Run
 
 ```bash
-npm install        # or reuse ../frontend/node_modules (identical deps)
+npm install
 npm run dev        # http://localhost:3000  → redirects to /fr
 npm run build
 ```
 
-Env (`.env.local`): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
-`NEXT_PUBLIC_BACKEND_URL` (Express backend), `NEXT_PUBLIC_SITE_URL`.
-Catalogue/checkout/account need the backend running; if it is offline the storefront
-still renders (empty catalogue, account shows empty state).
+Env (`.env.local`):
+- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` — client + SSR
+- `SUPABASE_SERVICE_ROLE_KEY` — admin API routes (`lib/supabase/admin.ts`)
+- `NEXT_PUBLIC_SITE_URL` — OAuth redirect / absolute links
+- `NEXT_PUBLIC_WHATSAPP_NUMBER` — support link
+- PayPal (optional): `PAYPAL_CLIENT_ID` / `PAYPAL_ME_HANDLE` per the checkout config
 
 ## Edit per section
 
@@ -24,32 +26,30 @@ still renders (empty catalogue, account shows empty state).
 |---|---|---|
 | Home / catalogue | `app/[locale]/(store)/page.tsx` | `components/store/HomeContent.tsx`, `sections.tsx` |
 | Product detail | `app/[locale]/(store)/product/[id]/page.tsx` | `components/product/ProductPage.tsx` |
+| Checkout | `app/[locale]/(store)/checkout/page.tsx` | `components/checkout/CheckoutFlow.tsx` |
 | Auth (login/register) | `app/[locale]/auth/page.tsx` + `auth/callback/route.ts` | `components/auth/AuthPage.tsx` |
-| Account | `app/[locale]/(store)/account/page.tsx` | `components/account/SignOutButton.tsx` |
-| About | `app/[locale]/(store)/about/page.tsx` | `components/content/AboutPage.tsx` |
-| FAQ | `app/[locale]/(store)/faq/page.tsx` | `components/content/FaqPage.tsx` |
-| Legal | `app/[locale]/(store)/legal/page.tsx` | `components/content/PolicyPage.tsx` |
-| Chrome (header/footer/cart) | `app/[locale]/(store)/layout.tsx` | `components/store/StoreShell.tsx`, `Header.tsx`, `Footer.tsx`, `CartDrawer.tsx` |
+| Account | `app/[locale]/(store)/account/page.tsx` | `components/account/ProfileForm.tsx` |
+| Subscriptions | `app/[locale]/(store)/abonnements/page.tsx` | `components/account/GroupsList.tsx` |
+| Management (admin) | `app/[locale]/management/*` | `components/admin/*` |
+| About / FAQ / Legal | `app/[locale]/(store)/{about,faq,legal}/page.tsx` | `components/content/*` |
+| Chrome (header/footer/cart) | `app/[locale]/(store)/layout.tsx` | `components/store/StoreShell.tsx`, `Header.tsx`, `Footer.tsx` |
 
 Shared: `components/store/primitives.tsx` (Icon, Logo, ProductArt, `useIsMobile`),
-`components/store/cart-context.tsx` (single-item cart + checkout).
+`components/store/cart-context.tsx` (cart + wishlist, localStorage-persisted).
 
-## What links to the backend ("what's been done")
+## Server API (`app/api/*`)
 
-- **Catalogue/search/product** → `api.products.list/get` (Chariow proxy), mapped to the
-  v2 card shape in `lib/v2-adapter.ts` (`chariow-adapter` → `ServiceWithPlans` → `CardProduct`).
-- **Auth** → Supabase Google OAuth + email/password; `auth/callback` exchanges the code.
-- **Account** → `api.subscriptions.list` + `api.requests.list`.
-- **Checkout** → `api.checkout.initiate` (Chariow). Redirects to the returned checkout URL.
+- **Catalogue** → Supabase read (`lib/catalog.ts`): categories → services → plans + stock.
+- **Auth** → Supabase email/password + Google OAuth; `auth/callback` exchanges the code.
+- **Orders** → `POST /api/groups` (`create_group` RPC), `submit-txn` for mobile-money IDs.
+- **PayPal** → `api/paypal/create-order` + `capture`.
+- **Account** → subscriptions/orders read from Supabase.
+- **Admin** → `api/admin/*` (catalog, inventory, ledger, order queue) via the service-role client.
 
-## Notes / TODO
+## Notes
 
-- **Cart holds one item at a time** (adding replaces). Decision per product owner.
-- **PayPal button** currently routes through the same `api.checkout.initiate` (Chariow) —
-  a dedicated PayPal gateway is not yet on the backend. See `cart-context.tsx#checkout`.
-- **Checkout name/phone** are derived from Supabase user metadata; the backend requires
-  `phone`, so add a phone-capture step before going live.
-- **Management/admin** intentionally not ported here (still lives in `../frontend`).
-- Hero slides are static design content; everything else is live data.
+- Cart holds multiple lines (each = service + plan); cap enforced client + server side.
+- Payment: mobile money (manual txn ID, team-validated) + PayPal (immediate).
+- Hero slides are static design content; everything else is live Supabase data.
 
 `_design-reference/` holds the original v2 prototype (CDN React + Babel) for reference.

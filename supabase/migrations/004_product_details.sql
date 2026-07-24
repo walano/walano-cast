@@ -1,9 +1,8 @@
--- Détails enrichis par produit (clé = product_id Chariow).
--- Chariow reste la source du catalogue (lecture seule) ; ici on stocke
--- le contenu app-spécifique : description longue + processus d'activation.
+-- Détails enrichis par produit (clé = product_id).
+-- Contenu app-spécifique : description longue + processus d'activation.
 
 create table public.product_details (
-  product_id  text primary key,            -- ID Chariow du produit
+  product_id  text primary key,            -- ID du produit
   details     text,                        -- description riche (markdown/texte)
   activation  text,                        -- processus d'activation
   updated_at  timestamptz not null default now()

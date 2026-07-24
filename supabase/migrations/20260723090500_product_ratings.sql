@@ -1,4 +1,4 @@
--- Ratings for services (recreated after the rebuild; old table was Chariow-keyed)
+-- Ratings for services (recreated after the rebuild)
 
 create table public.product_ratings (
   user_id    uuid not null references public.profiles(id) on delete cascade,

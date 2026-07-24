@@ -1,10 +1,10 @@
--- Override storefront-facing fields per Chariow product.
+-- Override storefront-facing fields per product.
 -- Extends the existing product_details table (description + activation) with:
---   - display_name : override Chariow's product.name on the storefront
---   - category     : force a category different from Chariow's
+--   - display_name : override the product's name on the storefront
+--   - category     : force a category different from the default
 --   - banner_url   : 4:3 banner displayed on item card + item detail hero
 --
--- All fields are nullable; when null, the Chariow value (or default) is used.
+-- All fields are nullable; when null, the default value is used.
 
 alter table public.product_details
   add column if not exists display_name text,
